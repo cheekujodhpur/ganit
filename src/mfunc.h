@@ -26,6 +26,9 @@ char* fixExpression(char*input);
 char* fixPolish(char*);	//break into strings for rearrangement
 void cleanUp();	//clean up variables at end of program
 int defineVariable(char*);
+int inserter(string*,string*,int,int,int);
+void inline setzero(int ar[3]);
+string* simplifyPolish(string*,int,int&);
 
 //definitions
 
@@ -486,6 +489,128 @@ int defineVariable(char* input)
 	file.close();
 
 	return 1;
+}
+
+int inserter(string*ar,string*temp,int start,int _end,int _beg)
+{
+	int beg;
+	int end;
+	beg = _end>_beg?_beg:_end;
+	end = _end>_beg?_end:_beg;
+	int i=start,j=beg;
+	if(j!=-1)
+	{
+		for(i=start,j=beg;j<=end;j++,i++)
+	{
+		ar[i]=temp[j];
+	}
+		return i;
+	}
+	return 0;
+
+}
+
+void inline setzero(int ar[3])
+{
+      for(int i=0;i<3;i++)
+      {
+        ar[i]=0;
+      }
+}
+
+string*simplifyPolish(string * exp,int n,int &size)
+{
+  int operand_ctr=0,
+	  operator_ctr=0,
+	  i=n-1,
+	  pos[6],
+	  posctr=0,
+	  expctr[3],
+	  ctr=0,
+	  l=0,
+	  stop=0,
+	  flag=0;
+
+    size = n;
+  /*The below lines use varibles
+  //can you make a function to calculate length of string .please name it as strlen(string*ar);
+  1)i: it is responsbe for controlling the loop
+  2)pos:notes the position from where
+  3)ctr :it is specially used to keep track of position on temp
+  4)flag is used to note if 3 expressins have been taken out
+  5)split ctr as evident from name keeps count of positions on splitexp
+ 6)tempexp is used to temporarily store an expression until it is COMPLETE
+  7)splitexp contains the three COMPLETE expressions
+  8)afterexp stores the array after +* pattern to be used later.*/
+
+  string*ar=exp,
+        *temp;
+
+    while(i>0)
+    {
+        if(ar[i]=="*" && (ar[i-1]=="+" || ar[i-1]=="-"))
+        {
+            posctr=0;
+            pos[posctr++]=i-2;
+
+            operand_ctr=0;
+            operator_ctr=0;
+
+            ctr=0;
+            flag=0;
+            setzero(expctr);
+
+            for(int j=i-2;j>=0;j--)
+            {
+                expctr[ctr]++;
+
+                if(ar[j]=="+"||ar[j]=="-"||ar[j]=="*")
+                    operator_ctr++;
+                else
+                    operand_ctr++;
+                if(operand_ctr==operator_ctr+1)
+                {
+                      flag++;
+
+                      operand_ctr=0;
+                      operator_ctr=0;
+
+                      pos[posctr++]=j;
+
+                      if(flag!=3)
+                        pos[posctr++]=j-1;
+
+                      ctr++;
+                }
+                if(flag==3)
+                    break;
+            }
+            temp=ar;
+            ar=new string[size+expctr[2]+1];
+            if(pos[5])
+                stop=inserter(ar,temp,0,0,pos[5]-1);
+
+            stop=inserter(ar,temp,stop,pos[0],pos[1]);
+            stop=inserter(ar,temp,stop,pos[4],pos[5]);
+
+            ar[stop++]="*";
+
+            stop=inserter(ar,temp,stop,pos[2],pos[3]);
+            stop=inserter(ar,temp,stop,pos[4],pos[5]);
+
+            ar[stop++]="*";
+
+            ar[stop++]="+";
+
+            if(pos[0]+2!=size-1)
+                stop=inserter(ar,temp,stop,pos[0]+3,size-1);
+
+            temp=0;
+            size += expctr[2] + 1;
+            return ar;
+        }
+        i--;
+    }
 }
 
 void cleanUp()
