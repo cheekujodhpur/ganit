@@ -29,6 +29,7 @@ int defineVariable(char*);
 int inserter(string*,string*,int,int,int);
 void inline setzero(int ar[3]);
 string* simplifyPolish(string*,int,int&,bool&);
+string* reducePolish(string*,int&);
 
 //definitions
 
@@ -71,6 +72,60 @@ char *fixExpression(char*expression)
 	return tmpstr.tostring();
 }
 
+string* reducePolish(string* input, int &n)
+{
+	//n is size
+	int iter = 1;
+	Stack<string> stred;
+	stred.push(input[0]);
+	int size = n;
+	while(iter<size)
+	{
+		if(input[iter]=="*")
+		{
+			char* a = stochar(stred.pop());
+			char* b = stochar(stred.pop());
+			if(allnums(a) &&  allnums(b))
+			{
+				stred.push(to_string(tofloat(a)*tofloat(b)));
+			}
+			else if(!allnums(a) &&  allnums(b))
+			{
+				if(tofloat(b)==1 && (a!="+" && a!="-" && a!="*" && a!="/" && a!="^"))
+					stred.push(a);
+				else
+				{
+					stred.push(chartos(b));
+					stred.push(chartos(a));
+					stred.push("*");
+				}
+			}
+			else if(allnums(a) &&  !allnums(b))
+			{
+				if(tofloat(a)==1 && (b!="+" && b!="-" && b!="*" && b!="/" && b!="^"))
+					stred.push(b);
+				else
+				{
+					stred.push(chartos(b));
+					stred.push(chartos(a));
+					stred.push("*");
+				}
+			}
+			else
+			{
+				stred.push(chartos(b));
+				stred.push(chartos(a));
+				stred.push("*");
+			}
+		}
+		else
+			stred.push(input[iter]);
+		iter++;
+	}
+	n = stred.size();
+	return stred.toStrArray();
+}
+
 string showPolish(char*input)
 {
 	string nullstr = "";
@@ -88,6 +143,7 @@ string showPolish(char*input)
 
 	while(!flag)
 		out = simplifyPolish(out,size,size,flag);
+	out = reducePolish(out,size);
 	string res = "";
 	for(int i = 0;i<size;i++)
 		res = res+out[i];
