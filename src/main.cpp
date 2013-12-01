@@ -87,6 +87,10 @@ int main()
 			else if(vardecstat==3)
 				cout << STR_VAR_CREATE_FAIL_2;
 		}
+		else if(iscalc(input))
+		{
+			Calculator(input);
+		}
 		else
 			cout << STR_INVALID;
 	}

@@ -28,8 +28,40 @@ void cleanUp();	//clean up variables at end of program
 int defineVariable(char*);
 string* simplifyPolish(string*,int,int&,bool&);
 string* reducePolish(string*,int&);
+void Calculator(char*);
 
 //definitions
+
+void Calculator(char* input)
+{
+	fstream file;
+
+	file.open("var.tmp",ios::in|ios::binary); //open for reading
+	if(!file)
+		cout << "Crash!!!" << endl;
+	List<Variable>Variables;
+	file.read((char*)&Variables,sizeof(Variables));
+	file.close();
+
+	//Need to generate a variable map
+	map<char*,char*,cmp_str> Varbs = Variables.generateMap();
+	input = stochar(substr(chartos(input),0,charsize(input)-2));
+	input = fixExpression(input);	//fix for use with next function
+	float res =  toPolishandEval(input,Varbs);
+	
+	cout << res << endl;
+
+	//Add result to variable '_'
+	Variable temp("_",stochar(to_string(res)));
+	if(!Variables.VinListandReplace(temp))
+		Variables.append(temp);
+	
+	file.open("var.tmp",ios::out|ios::binary);
+	if(!file)
+		cout << "Crash!!!" << endl;
+	file.write((char*)&Variables,sizeof(Variables));
+	file.close();
+}
 
 int precedence(char in)
 {
@@ -308,12 +340,6 @@ string * toPolish_inString(char*input)//converts to polish string
 float toPolishandEval(char*input,map<char*,char*,cmp_str> Varbs)
 {
 	Stack<float> result_stack;
-	/*for(int i = 0;i<numofterm;i++)
-	{
-		if(terms[i]==chartos(var))
-			result_stack.fire(value);
-		result_stack.fire(stochar(terms[i]));
-	}*/
 	int numofterm = 1;
 	for(int i = 0;i<charsize(input);i++)
 		if(input[i]=='+' || input[i] =='-' || input[i] == '*' || input[i] =='/' || input[i] =='^' || input[i] == ')' || input[i] == '(')numofterm++;
@@ -538,30 +564,20 @@ string*simplifyPolish(string * exp,int n,int &size,bool &statusflag)
 {
 	int insertToOutput(string*,string*,int,int,int);
 
-  int operand_ctr=0,
-	  operator_ctr=0,
-	  i=n-1,
-	  pos[6],
-	  posctr=0,
-	  expctr[3],
-	  ctr=0,
-	  l=0,
-	  stop=0,
-	  flag=0;
+	int operand_ctr=0,
+		operator_ctr=0,
+		i=n-1,
+		pos[6],
+		posctr=0,
+		expctr[3],
+		ctr=0,
+		l=0,
+		stop=0,
+		flag=0;
 
     size = n;
-  /*The below lines use varibles
-  //can you make a function to calculate length of string .please name it as strlen(string*ar);
-  1)i: it is responsbe for controlling the loop
-  2)pos:notes the position from where
-  3)ctr :it is specially used to keep track of position on temp
-  4)flag is used to note if 3 expressins have been taken out
-  5)split ctr as evident from name keeps count of positions on splitexp
- 6)tempexp is used to temporarily store an expression until it is COMPLETE
-  7)splitexp contains the three COMPLETE expressions
-  8)afterexp stores the array after +* pattern to be used later.*/
-
-  string*ar=exp,
+  
+	string*ar=exp,
         *temp;
 
     while(i>0)
@@ -643,12 +659,13 @@ int insertToOutput(string*ar,string*temp,int start,int _end,int _beg)
 	beg = _end>_beg?_beg:_end;
 	end = _end>_beg?_end:_beg;
 	int i=start,j=beg;
+
 	if(j!=-1)
 	{
 		for(i=start,j=beg;j<=end;j++,i++)
-	{
-		ar[i]=temp[j];
-	}
+		{
+			ar[i]=temp[j];
+		}
 		return i;
 	}
 	return 0;

@@ -18,7 +18,13 @@ int charsize(char*in,char delim);
 int strsize(string in);
 string chartos(char*in);
 char* stochar(string in);
-string substr(string,int,int);
+string substr(string,int,int);	//works between two indices, including them
+bool iscalc(char*);
+
+bool iscalc(char*input)
+{
+	return input[charsize(input)-1]=='=';
+}
 
 string substr(string input,int m,int n)
 {
