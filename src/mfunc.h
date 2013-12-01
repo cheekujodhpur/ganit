@@ -26,8 +26,6 @@ string showPolish(char*);
 char* fixExpression(char*input);
 void cleanUp();	//clean up variables at end of program
 int defineVariable(char*);
-int inserter(string*,string*,int,int,int);
-void inline setzero(int ar[3]);
 string* simplifyPolish(string*,int,int&,bool&);
 string* reducePolish(string*,int&);
 
@@ -536,35 +534,10 @@ int defineVariable(char* input)
 	return 1;
 }
 
-int inserter(string*ar,string*temp,int start,int _end,int _beg)
-{
-	int beg;
-	int end;
-	beg = _end>_beg?_beg:_end;
-	end = _end>_beg?_end:_beg;
-	int i=start,j=beg;
-	if(j!=-1)
-	{
-		for(i=start,j=beg;j<=end;j++,i++)
-	{
-		ar[i]=temp[j];
-	}
-		return i;
-	}
-	return 0;
-
-}
-
-void inline setzero(int ar[3])
-{
-      for(int i=0;i<3;i++)
-      {
-        ar[i]=0;
-      }
-}
-
 string*simplifyPolish(string * exp,int n,int &size,bool &statusflag)
 {
+	int insertToOutput(string*,string*,int,int,int);
+
   int operand_ctr=0,
 	  operator_ctr=0,
 	  i=n-1,
@@ -603,7 +576,10 @@ string*simplifyPolish(string * exp,int n,int &size,bool &statusflag)
 
             ctr=0;
             flag=0;
-            setzero(expctr);
+            for(int iter=0;iter<3;iter++)
+			{
+				expctr[iter]=0;
+			}
 
             for(int j=i-2;j>=0;j--)
             {
@@ -633,22 +609,22 @@ string*simplifyPolish(string * exp,int n,int &size,bool &statusflag)
             temp=ar;
             ar=new string[size+expctr[2]+1];
             if(pos[5])
-                stop=inserter(ar,temp,0,0,pos[5]-1);
+                stop=insertToOutput(ar,temp,0,0,pos[5]-1);
 
-            stop=inserter(ar,temp,stop,pos[0],pos[1]);
-            stop=inserter(ar,temp,stop,pos[4],pos[5]);
+            stop=insertToOutput(ar,temp,stop,pos[0],pos[1]);
+            stop=insertToOutput(ar,temp,stop,pos[4],pos[5]);
 
             ar[stop++]="*";
 
-            stop=inserter(ar,temp,stop,pos[2],pos[3]);
-            stop=inserter(ar,temp,stop,pos[4],pos[5]);
+            stop=insertToOutput(ar,temp,stop,pos[2],pos[3]);
+            stop=insertToOutput(ar,temp,stop,pos[4],pos[5]);
 
             ar[stop++]="*";
 
             ar[stop++]="+";
 
             if(pos[0]+2!=size-1)
-                stop=inserter(ar,temp,stop,pos[0]+3,size-1);
+                stop=insertToOutput(ar,temp,stop,pos[0]+3,size-1);
 
             temp=0;
             size += expctr[2] + 1;
@@ -658,6 +634,25 @@ string*simplifyPolish(string * exp,int n,int &size,bool &statusflag)
     }
 	statusflag = true;
 	return ar;
+}
+
+int insertToOutput(string*ar,string*temp,int start,int _end,int _beg)
+{
+	int beg;
+	int end;
+	beg = _end>_beg?_beg:_end;
+	end = _end>_beg?_end:_beg;
+	int i=start,j=beg;
+	if(j!=-1)
+	{
+		for(i=start,j=beg;j<=end;j++,i++)
+	{
+		ar[i]=temp[j];
+	}
+		return i;
+	}
+	return 0;
+
 }
 
 void cleanUp()
