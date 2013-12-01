@@ -39,6 +39,7 @@ public:
 	void error(int);
 	int size();
 	char*tostring();
+	string*toStrArray();
 };
 
 //Class definitions for data structure stack
@@ -166,6 +167,16 @@ void Stack<float>::fire(char*in)
 	{
 		this->push(tofloat(in));
 	}
+}
+
+string* Stack<string>::toStrArray()
+{
+	string * res = new string[this->count];
+	int limit = this->count;
+	int iter = limit-1;
+	while(iter>=0)
+		res[iter--] = this->pop();
+	return res;
 }
 
 //Function

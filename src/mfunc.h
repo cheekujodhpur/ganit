@@ -20,15 +20,15 @@ int display_function(char*input);
 int evaluate_function(char*input);
 int precedence(char in);
 string toPolish(char*);
+string *toPolish_inString(char*);
 float toPolishandEval(char*,map<char*,char*,cmp_str>);
 string showPolish(char*);
 char* fixExpression(char*input);
-char* fixPolish(char*);	//break into strings for rearrangement
 void cleanUp();	//clean up variables at end of program
 int defineVariable(char*);
 int inserter(string*,string*,int,int,int);
 void inline setzero(int ar[3]);
-string* simplifyPolish(string*,int,int&);
+string* simplifyPolish(string*,int,int&,bool&);
 
 //definitions
 
@@ -78,112 +78,20 @@ string showPolish(char*input)
 	string s = chartos(input);
 	if(!regex_match(s,sm,REG_POLISH))
 		return nullstr;
-	char * out = stochar(toPolish(fixExpression(stochar(sm[1]))));
-	while(strcmp(out,fixPolish(out)))out = fixPolish(out);
-	return out;
-}
 
-char* fixPolish(char* input)	//simplify expression
-{
-	//TODO : add cases like (x+2)3, and feature to combine ++,+-,--,-+, for ^
-	{//works on +* or -*
-		int length = charsize(input);
-		int iter = length-1;
-		char**all = new char*[6];
-		int a = 0,b = length-1;
-		while(iter>0)
-		{
-			if((input[iter]=='*') && (input[iter-1]=='+' || input[iter-1]=='-'))
-			{
-				a = iter+1;
-				all[5] = stochar(substr(chartos(input),a,b));
-				b = iter-1;
-				a = b;
-				all[4] = stochar(substr(chartos(input),a,b));
-				b = iter-2;
-				break;
-			}
-			iter--;
-		}
-		if(iter==0)
-			return input;
-		iter = iter-2;
-		int ter = 0;
-		int and = 0;
-		while(iter>=0)
-		{
-			if(input[iter]=='+' || input[iter] =='-' || input[iter] == '*' || input[iter] =='/' || input[iter] =='^')
-				ter++;
-			else
-			{
-				if(isdigit(input[iter])){
-					while(isdigit(input[iter])){iter--;
-					if(iter<0)break;}
-					iter++;}
-				and++;
-			}
-			iter--;
-			if(ter==and-1)
-			{
-				a = iter+1;
-				all[3] = stochar(substr(chartos(input),a,b));
-				break;
-			}
-		}
-		b = iter;
-		ter = 0;
-		and = 0;
-		while(iter>=0)
-		{
-			if(input[iter]=='+' || input[iter] =='-' || input[iter] == '*' || input[iter] =='/' || input[iter] =='^')
-				ter++;
-			else
-			{
-				if(isdigit(input[iter])){
-					while(isdigit(input[iter])){iter--;
-					if(iter<0)break;}
-					iter++;}
-				and++;
-			}
-			iter--;
-			if(ter==and-1)
-			{
-				a = iter+1;
-				all[2] = stochar(substr(chartos(input),a,b));
-				break;
-			}
-		}
-		b = iter;
-		ter = 0;
-		and = 0;
-		while(iter>=0)
-		{
-			if(input[iter]=='+' || input[iter] =='-' || input[iter] == '*' || input[iter] =='/' || input[iter] =='^')
-				ter++;
-			else
-			{
-				if(isdigit(input[iter])){
-					while(isdigit(input[iter])){iter--;
-					if(iter<0)break;}
-					iter++;}
-				and++;
-			}
-			iter--;
-			if(ter==and-1)
-			{
-				a = iter+1;
-				all[1] = stochar(substr(chartos(input),a,b));
-				break;
-			}
-		}
-		b = iter;
-		a = 0;
-		all[0] = stochar(substr(chartos(input),a,b));
-		string output = "";
-		output = output + all[0] + all[2] + all[1] + "*" + all[3] + all[1] + "*" + all[4]+all[5];
-		char*out = stochar(output);
-		return out;
-	}
+	int size = 0;
+	string*out = toPolish_inString(fixExpression(stochar(sm[1])));
+	//Get size of 'out'
+	while(out[size]!="null")size++;
+	
+	bool flag = false;
+
+	while(!flag)
+		out = simplifyPolish(out,size,size,flag);
+	string res = "";
+	for(int i = 0;i<size;i++)
+		res = res+out[i];
+	return res;
 }
 
 string toPolish(char*input)//converts to polish string
@@ -260,6 +168,87 @@ string toPolish(char*input)//converts to polish string
 		}
 	}
 	return res;
+}
+
+string * toPolish_inString(char*input)//converts to polish string
+{
+	int numofterm = 1;
+	for(int i = 0;i<charsize(input);i++)
+		if(input[i]=='+' || input[i] =='-' || input[i] == '*' || input[i] =='/' || input[i] =='^' || input[i] == ')' || input[i] == '(')numofterm++;
+	string * terms;
+	numofterm = 2*numofterm-1;
+	terms = new string[numofterm];
+	for(int i = 0;i<numofterm;i++)
+		terms[i] = "";
+	int i = 0,j=0;
+	while(i<numofterm)
+	{
+		while(input[j]!=0 && input[j]!='+' && input[j]!='-' && input[j]!='*' && input[j]!='/' && input[j]!='^' && input[j]!='(' && input[j]!=')')
+		{
+			terms[i] = terms[i]+input[j];
+			j++;
+		}
+		if(j>=charsize(input))break;
+		i++;
+		terms[i] = terms[i] + input[j];
+		j++;
+		if(j>=charsize(input))break;
+		i++;
+	}
+	Stack<string> pol1;
+	Stack<string> res;
+	for(int i = 0;i<numofterm;i++)
+	{
+		if(terms[i]!="(" && terms[i]!=")" && terms[i]!="+" && terms[i]!="-" && terms[i]!="*" && terms[i]!="/" && terms[i]!="^")
+		{
+			if(terms[i]!="")res.push(terms[i]);
+		}
+		else if(terms[i]=="(")
+			pol1.push(terms[i]);
+		else if(terms[i]=="+" || terms[i]=="-" || terms[i]=="*" || terms[i]=="/" || terms[i]=="^")
+		{
+			string tmpstr;
+			while(pol1.size()>0)
+			{
+				tmpstr = pol1.pop();
+				if(tmpstr=="+" || tmpstr=="-" || tmpstr=="*" || tmpstr=="/" || tmpstr=="^")
+				{
+					if(precedence(tmpstr[0])>=precedence(terms[i][0]))
+					{
+						if(tmpstr!="")
+							res.push(tmpstr);
+						continue;
+					}
+					else
+					{
+						pol1.push(tmpstr);
+						break;
+					}
+				}
+				else
+				{
+					pol1.push(tmpstr);
+					break;
+				}
+			}
+			pol1.push(terms[i]);
+		}
+		else if(terms[i]==")")
+		{
+			string tmpstr;
+			while(pol1.size()>0)
+			{
+				tmpstr = pol1.pop();
+				if(tmpstr=="(")
+					break;
+				if(tmpstr=="+" || tmpstr=="-" || tmpstr=="*" || tmpstr=="/" || tmpstr=="^")
+					if(tmpstr!="")
+						res.push(tmpstr);
+			}
+		}
+	}
+	res.push("null");
+	return res.toStrArray();
 }
 
 float toPolishandEval(char*input,map<char*,char*,cmp_str> Varbs)
@@ -518,7 +507,7 @@ void inline setzero(int ar[3])
       }
 }
 
-string*simplifyPolish(string * exp,int n,int &size)
+string*simplifyPolish(string * exp,int n,int &size,bool &statusflag)
 {
   int operand_ctr=0,
 	  operator_ctr=0,
@@ -549,7 +538,7 @@ string*simplifyPolish(string * exp,int n,int &size)
     while(i>0)
     {
         if(ar[i]=="*" && (ar[i-1]=="+" || ar[i-1]=="-"))
-        {
+		{
             posctr=0;
             pos[posctr++]=i-2;
 
@@ -611,6 +600,8 @@ string*simplifyPolish(string * exp,int n,int &size)
         }
         i--;
     }
+	statusflag = true;
+	return ar;
 }
 
 void cleanUp()
