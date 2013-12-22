@@ -23,10 +23,12 @@ int main()
 	CreateFile<Function>(Functions,"fun.tmp");
 	CreateFile<Variable>(Variables,"var.tmp");
 
+	cout << WELCOME_MESSAGE << endl;
+
 	//the following loop maintains the program
 	while(1)
 	{
-		cout << "-> ";
+		cout << PROMPT_MESSAGE;
 		while(cin.peek()!=';')
 		{
 			in_c = cin.get();

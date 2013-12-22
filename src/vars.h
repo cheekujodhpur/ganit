@@ -12,9 +12,12 @@ using namespace std;
 #define P_HELP "help"
 #define P_LISTCMD "listcmd"
 
+#define WELCOME_MESSAGE "Hi! This is ganit v0.1, a mathematical computing software.\nCurrent functionalities include calculator and function/variable definitions and evaluation.\nWe appreciate your feedback on cheekujodhpur@gmail.com\n\nIf you need any help, you just need to type 'help;'\n"
+#define PROMPT_MESSAGE "ganit>> "
+
 #define STR_HELP "Help\n\nThis section is under construction. For further details,\nContact : \nKumar Ayush\ncheekujodhpur@gmail.com\n"
 #define STR_INVALID "Invalid Command\nFor a list of commands, try <<listcmd>>\nFor more details on a command, type <<command help>>\nAll commands must end with a semi-colon\n"
-#define STR_LISTCMD "List of commands\n\nhelp\nlistcmd\nFunction\nDisplay\nEvaluate\nexit\n"
+#define STR_LISTCMD "List of commands\n\nhelp\nlistcmd\nFunction\nDisplay\nEvaluate\nVariable\nexit\n"
 #define STR_FUNC_CREATE_SUCCESS "Function created successfully.\n"
 #define STR_FUNC_CREATE_FAIL "Function creation failed.\nPlease check your syntax.\n"
 #define STR_FUNC_CREATE_FAIL_1 "Function creation failed.\nInvalid Expression.\n"

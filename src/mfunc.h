@@ -450,7 +450,10 @@ int evaluate_function(char*input)
 
 	//Need to generate a variable map
 	map<char*,char*,cmp_str> Varbs = Variables.generateMap();
-	Varbs[variable] = stochar(sm[2]);
+	if(sm[2]=="_")
+		Varbs[variable] = Varbs["_"];
+	else
+		Varbs[variable] = stochar(sm[2]);
 
 	char*expressionstr = Functions.FinListandGetExp(stochar(sm[1]));
 	if(expressionstr)
